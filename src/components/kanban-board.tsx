@@ -1,4 +1,4 @@
-import { KanbanColumn } from "./kanban-column"
+import { KanbanColumn } from "./kanban-column";
 
 // Sample data for the kanban board
 const columns = [
@@ -157,7 +157,7 @@ const columns = [
       },
     ],
   },
-]
+];
 
 export function KanbanBoard() {
   return (
@@ -166,5 +166,5 @@ export function KanbanBoard() {
         <KanbanColumn key={column.id} column={column} />
       ))}
     </div>
-  )
+  );
 }

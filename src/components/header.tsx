@@ -1,10 +1,13 @@
-import { Bell, Plus, Search } from "lucide-react"
-import Link from "next/link"
-
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+"use client";
+import { Bell, Plus, Search } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useNewJobForm } from "./new-job-form-provider";
 
 export function Header() {
+  const { setOpen } = useNewJobForm();
+
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-6 dark:bg-gray-800">
       <div className="flex items-center gap-2">
@@ -25,11 +28,11 @@ export function Header() {
           <Bell className="mr-2 h-4 w-4" />
           Notifications
         </Button>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Job
         </Button>
       </div>
     </header>
-  )
+  );
 }
