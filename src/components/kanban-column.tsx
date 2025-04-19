@@ -3,24 +3,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { JobCard } from "./job-card";
 import { useNewJobForm } from "./new-job-form-provider";
-
-interface Job {
-  id: string;
-  company: string;
-  position: string;
-  location: string;
-  salary: string;
-  date: string;
-  logo: string;
-  color: string;
-}
-
-interface Column {
-  id: string;
-  title: string;
-  count: number;
-  jobs: Job[];
-}
+import { Column } from "@/types";
 
 interface KanbanColumnProps {
   column: Column;
@@ -33,9 +16,9 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
     <div className="flex h-full w-80 flex-shrink-0 flex-col rounded-lg bg-gray-100 dark:bg-gray-800">
       <div className="flex items-center justify-between p-3">
         <div className="flex items-center gap-2">
-          <h3 className="font-medium">{column.title}</h3>
+          <h3 className="font-medium">{column.name}</h3>
           <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs dark:bg-gray-700">
-            {column.count}
+            {column.jobs.length}
           </span>
         </div>
         <Button
