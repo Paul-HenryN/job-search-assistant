@@ -1,9 +1,11 @@
 "use client";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { JobCard } from "./job-card";
 import { useNewJobForm } from "./new-job-form-provider";
 import { Column } from "@/types";
+import { SortableContext } from "@dnd-kit/sortable";
+import { SortableJobCard } from "./sortable-job-card";
+import { useDroppable } from "@dnd-kit/core";
 
 interface KanbanColumnProps {
   column: Column;
@@ -11,9 +13,19 @@ interface KanbanColumnProps {
 
 export function KanbanColumn({ column }: KanbanColumnProps) {
   const { setOpen } = useNewJobForm();
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+    data: {
+      type: "column",
+      meta: column,
+    },
+  });
 
   return (
-    <div className="flex h-full w-80 flex-shrink-0 flex-col rounded-lg bg-gray-100 dark:bg-gray-800">
+    <div
+      data-over={isOver}
+      className="flex h-full w-80 flex-shrink-0 flex-col rounded-lg bg-gray-100 dark:bg-gray-800 data-[over=true]:outline-orange-300 data-[over=true]:outline-dashed"
+    >
       <div className="flex items-center justify-between p-3">
         <div className="flex items-center gap-2">
           <h3 className="font-medium">{column.name}</h3>
@@ -30,14 +42,22 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
           <Plus className="h-4 w-4" />
         </Button>
       </div>
-      <div className="flex-1 space-y-3 overflow-y-auto p-2">
-        {column.jobs.map((job) => (
-          <JobCard key={job.id} job={job} />
-        ))}
+
+      <div className="p-2">
+        <SortableContext items={column.jobs}>
+          <div
+            ref={setNodeRef}
+            className="flex-1 space-y-3 overflow-y-auto min-h-32 overflow-x-hidden"
+          >
+            {column.jobs.map((job) => (
+              <SortableJobCard key={job.id} job={job} />
+            ))}
+          </div>
+        </SortableContext>
 
         <Button
           variant="ghost"
-          className="w-full border border-dashed border-gray-500 bg-gray-300 hover:bg-gray-200"
+          className="w-full border border-dashed border-gray-500 bg-gray-300 hover:bg-gray-200 mt-4"
           onClick={() => setOpen(true)}
         >
           <Plus className="h-4 w-4" />

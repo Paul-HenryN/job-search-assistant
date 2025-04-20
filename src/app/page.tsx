@@ -16,7 +16,7 @@ export default async function JobTrackerPage() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
         <main className="flex-1 overflow-x-auto p-4">
-          <KanbanBoard initialData={columns || []} />
+          <KanbanBoard />
         </main>
       </div>
     </div>
