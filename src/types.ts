@@ -11,4 +11,5 @@ export type Job = {
   title: string;
   description: string;
   created_at: string;
+  column_id: Column["id"];
 };

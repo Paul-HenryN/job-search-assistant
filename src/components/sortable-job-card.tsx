@@ -15,6 +15,7 @@ export function SortableJobCard({ job }: { job: Job }) {
   } = useSortable({
     id: job.id,
     data: {
+      type: "job",
       meta: job,
     },
   });

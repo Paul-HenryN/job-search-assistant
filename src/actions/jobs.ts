@@ -14,5 +14,27 @@ export async function createJob(formData: FormData) {
     column_id: Number(formData.get("column_id")),
   });
 
-  console.log("error", error);
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function updateJobStatus({
+  jobId,
+  newColumnId,
+}: {
+  jobId: number;
+  newColumnId: number;
+}) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("jobs")
+    .update({ column_id: newColumnId })
+    .eq("id", jobId);
+
+  if (error) {
+    console.error("error", error);
+    throw new Error(error.message);
+  }
 }
