@@ -1,14 +1,17 @@
-import { createClient } from "@/lib/supabase/server";
+"use client";
 import { KanbanColumn } from "./kanban-column";
+import { Column } from "@/types";
+import { useColumns } from "@/hooks/useColumns";
 
-export async function KanbanBoard() {
-  const supabase = await createClient();
-  const { data: columns, error } = await supabase
-    .from("columns")
-    .select("*,jobs(*)");
+export function KanbanBoard({ initialData }: { initialData?: Column[] }) {
+  const { data: columns, error, isLoading } = useColumns(initialData);
 
   if (error) {
     return <div>An error occured. Please try again later</div>;
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
   return (

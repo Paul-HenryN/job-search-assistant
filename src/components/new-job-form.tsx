@@ -1,3 +1,4 @@
+"use client";
 import { PlusIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { InputGroup } from "./ui/input-group";
@@ -11,40 +12,69 @@ import {
   SelectValue,
   SelectContent,
 } from "./ui/select";
+import { useColumns } from "@/hooks/useColumns";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function NewJobForm() {
+  const { data: columns, isLoading } = useColumns();
+  const queryClient = useQueryClient();
+  const { mutateAsync } = useMutation({
+    mutationFn: createJob,
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["columns"],
+      }),
+  });
+
+  const handleSubmit = async (formData: FormData) => {
+    mutateAsync(formData);
+  };
+
   return (
-    <form action={createJob} className="flex flex-col gap-4">
-      <InputGroup id="title" label="Job Title" name="title" required />
-      <InputGroup id="company" label="Company" name="company" required />
+    <form action={handleSubmit} className="flex flex-col gap-4">
+      <InputGroup
+        id="title"
+        label="Job Title"
+        name="title"
+        disabled={isLoading}
+        required
+      />
+      <InputGroup
+        id="company"
+        label="Company"
+        name="company"
+        disabled={isLoading}
+        required
+      />
       <TextareaGroup
         id="description"
         label="Job Description"
         name="description"
         rows={10}
+        disabled={isLoading}
         required
       />
 
       <div className="flex flex-col gap-2">
         <label>Column</label>
 
-        <Select name="column_id" required>
+        <Select name="column_id" disabled={isLoading} required>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Column" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="1">Applied</SelectItem>
-              <SelectItem value="2">Interviewing</SelectItem>
-              <SelectItem value="3">Offer</SelectItem>
-              <SelectItem value="4">Rejected</SelectItem>
-              <SelectItem value="5">Accepted</SelectItem>
+              {columns?.map((column) => (
+                <SelectItem key={column.id} value={column.id.toString()}>
+                  {column.name}
+                </SelectItem>
+              ))}
             </SelectGroup>
           </SelectContent>
         </Select>
       </div>
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full" disabled={isLoading}>
         <PlusIcon className="mr-2 h-4 w-4" />
         Add Job
       </Button>
