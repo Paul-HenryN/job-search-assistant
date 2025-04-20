@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase/client";
 import { Column } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
-export function useColumns({ initialData }: { initialData?: Column[] }) {
+export function useColumns({ initialData }: { initialData?: Column[] } = {}) {
   return useQuery({
     queryKey: ["columns"],
     queryFn: async () => {
