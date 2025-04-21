@@ -17,7 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useEffect, useState } from "react";
 import { JobCard } from "./job-card";
-import { updateJobStatus } from "@/actions/jobs";
+import { updateJob } from "@/actions/jobs";
 
 export function KanbanBoard({ initialData }: { initialData?: Column[] }) {
   const {
@@ -39,8 +39,11 @@ export function KanbanBoard({ initialData }: { initialData?: Column[] }) {
     })
   );
   const queryClient = useQueryClient();
-  const { mutateAsync } = useMutation({
-    mutationFn: updateJobStatus,
+  const { mutate } = useMutation({
+    mutationFn: async (updatedJobs: Job[]) =>
+      Promise.all(
+        updatedJobs.map((j) => updateJob({ jobId: j.id, payload: j }))
+      ),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["columns"] }),
     onError: console.error,
   });
@@ -50,25 +53,96 @@ export function KanbanBoard({ initialData }: { initialData?: Column[] }) {
   const handleDragOver = (e: DragOverEvent) => {
     const { active, over } = e;
 
-    if (active.id !== over?.id) {
-      if (over?.data.current?.type !== "column") return;
+    if (active.id === over?.id) return;
+    if (active.data.current?.type !== "job") return;
 
-      const columnId = Number(over.id);
+    if (over?.data.current?.type === "column") {
+      const targetColumnId = Number(over.id);
       const job = active.data.current?.meta;
 
-      if (job?.column_id === columnId) return; // Ignore moving to the same column
+      if (job?.column_id === targetColumnId) return; // Ignore moving to the same column
 
       setOptimisticColumns((oldColumns) => {
         if (!oldColumns) return oldColumns;
 
         return oldColumns.map((col) => {
-          if (col.id !== Number(columnId)) {
+          if (col.id !== Number(targetColumnId)) {
             return { ...col, jobs: col.jobs.filter((j) => j.id !== job?.id) };
           }
 
           return {
             ...col,
-            jobs: [...col.jobs, { ...job, column_id: columnId }],
+            jobs: [
+              ...col.jobs,
+              { ...job, column_id: targetColumnId, order: col.jobs.length },
+            ],
+          };
+        });
+      });
+    } else if (over?.data.current?.type === "job") {
+      const activeJob = active.data.current?.meta;
+      const overJob = over.data.current?.meta;
+
+      setOptimisticColumns((oldColumns) => {
+        if (!oldColumns) return oldColumns;
+
+        return oldColumns.map((col) => {
+          // If it's the target column
+          if (col.id === overJob?.column_id) {
+            const newJobs =
+              activeJob?.column_id === overJob?.column_id
+                ? col.jobs.map((j) => {
+                    if (j.id === activeJob?.id)
+                      return { ...j, order: over.data.current?.sortable.index };
+                    if (j.id === overJob?.id)
+                      return {
+                        ...j,
+                        order: active.data.current?.sortable.index,
+                      };
+
+                    return j;
+                  })
+                : col.jobs
+                    .map((j) => {
+                      if (j.order >= over.data.current?.sortable.index) {
+                        return { ...j, order: j.order + 1 };
+                      }
+
+                      return j;
+                    })
+                    .concat([
+                      {
+                        ...activeJob,
+                        order: over.data.current?.sortable.index,
+                        column_id: col.id,
+                      },
+                    ]);
+
+            return {
+              ...col,
+              jobs: newJobs,
+            };
+          }
+
+          // If it's the source column
+          if (col.id === activeJob?.column_id) {
+            return {
+              ...col,
+              jobs: col.jobs
+                .filter((j) => j.id !== activeJob?.id)
+                .map((j) => {
+                  if (j.order > activeJob?.order) {
+                    return { ...j, order: j.order - 1 };
+                  }
+
+                  return j;
+                }),
+            };
+          }
+
+          return {
+            ...col,
+            jobs: col.jobs.filter((j) => j.id !== activeJob?.id),
           };
         });
       });
@@ -78,31 +152,21 @@ export function KanbanBoard({ initialData }: { initialData?: Column[] }) {
   const handleDragEnd = async (e: DragEndEvent) => {
     setActiveJob(undefined);
 
-    const { active, over } = e;
+    const cachedColumns = queryClient.getQueryData<Column[]>(["columns"]);
+    const cachedJobs = cachedColumns?.map((c) => c.jobs).flat();
+    const optimisticJobs = optimisticColumns?.map((c) => c.jobs).flat();
 
-    if (active.id !== over?.id) {
-      if (active.data.current?.type !== "job") return;
-      if (over?.data.current?.type !== "column") return;
+    const updatedJobs = optimisticJobs?.filter((j) => {
+      const cachedJob = cachedJobs?.find((cj) => cj.id === j.id);
+      return JSON.stringify(cachedJob) !== JSON.stringify(j);
+    });
 
-      const jobId = Number(active.id);
-      const columnId = Number(over.id);
+    console.log(updatedJobs?.length, "jobs updated", updatedJobs);
 
-      const columns = queryClient.getQueryData<Column[]>(["columns"]);
-      const jobs = columns?.map((col) => col.jobs).flat();
-
-      const targetColumn = columns?.find((col) => col.id === columnId);
-      const targetJob = jobs?.find((job) => job.id === jobId);
-
-      if (!targetColumn || !targetJob) return;
-      if (targetJob.column_id === targetColumn.id) return; // Ignore moving to the same column
-
-      console.log("Moving job", targetJob, "to column", targetColumn);
-
-      await mutateAsync({ jobId: targetJob.id, newColumnId: targetColumn.id });
-    }
+    if (updatedJobs) mutate(updatedJobs);
   };
 
-  useEffect(() => setOptimisticColumns(columns), [columns]);
+  useEffect(() => setOptimisticColumns(columns), [columns]); // Sync optimistic columns with fetched data
 
   if (error) {
     return <div>An error occured. Please try again later</div>;

@@ -12,4 +12,5 @@ export type Job = {
   description: string;
   created_at: string;
   column_id: Column["id"];
+  order: number;
 };

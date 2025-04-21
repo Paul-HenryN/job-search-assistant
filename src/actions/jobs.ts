@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { Job } from "@/types";
 
 export async function createJob(formData: FormData) {
   const supabase = await createClient();
@@ -19,19 +20,16 @@ export async function createJob(formData: FormData) {
   }
 }
 
-export async function updateJobStatus({
+export async function updateJob({
   jobId,
-  newColumnId,
+  payload,
 }: {
-  jobId: number;
-  newColumnId: number;
+  jobId: Job["id"];
+  payload: Partial<Omit<Job, "id" | "created_at">>;
 }) {
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("jobs")
-    .update({ column_id: newColumnId })
-    .eq("id", jobId);
+  const { error } = await supabase.from("jobs").update(payload).eq("id", jobId);
 
   if (error) {
     console.error("error", error);

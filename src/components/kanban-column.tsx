@@ -19,12 +19,15 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
       type: "column",
       meta: column,
     },
+    disabled: column.jobs.length > 0,
   });
+
+  const sortedJobs = column.jobs.toSorted((a, b) => a.order - b.order);
 
   return (
     <div
       data-over={isOver}
-      className="flex h-full w-80 flex-shrink-0 flex-col rounded-lg bg-gray-100 dark:bg-gray-800 data-[over=true]:outline-orange-300 data-[over=true]:outline-dashed"
+      className="flex h-full w-80 flex-shrink-0 flex-col rounded-lg overflow-y-auto bg-gray-100 dark:bg-gray-800 data-[over=true]:outline-orange-300 data-[over=true]:outline-dashed"
     >
       <div className="flex items-center justify-between p-3">
         <div className="flex items-center gap-2">
@@ -44,12 +47,12 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
       </div>
 
       <div className="p-2">
-        <SortableContext items={column.jobs}>
+        <SortableContext items={sortedJobs}>
           <div
             ref={setNodeRef}
             className="flex-1 space-y-3 overflow-y-auto min-h-32 overflow-x-hidden"
           >
-            {column.jobs.map((job) => (
+            {sortedJobs.map((job) => (
               <SortableJobCard key={job.id} job={job} />
             ))}
           </div>
