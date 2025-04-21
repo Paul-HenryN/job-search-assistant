@@ -12,7 +12,7 @@ interface KanbanColumnProps {
 }
 
 export function KanbanColumn({ column }: KanbanColumnProps) {
-  const { setOpen } = useNewJobForm();
+  const { setOpen, setDefaultColumnId } = useNewJobForm();
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
     data: {
@@ -23,6 +23,11 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
   });
 
   const sortedJobs = column.jobs.toSorted((a, b) => a.order - b.order);
+
+  const openNewJobForm = () => {
+    setDefaultColumnId(column.id);
+    setOpen(true);
+  };
 
   return (
     <div
@@ -61,7 +66,7 @@ export function KanbanColumn({ column }: KanbanColumnProps) {
         <Button
           variant="ghost"
           className="w-full border border-dashed border-gray-500 bg-gray-300 hover:bg-gray-200 mt-4"
-          onClick={() => setOpen(true)}
+          onClick={openNewJobForm}
         >
           <Plus className="h-4 w-4" />
           <span>Add job</span>

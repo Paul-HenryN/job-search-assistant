@@ -13,6 +13,7 @@ export async function createJob(formData: FormData) {
     company: formData.get("company"),
     description: formData.get("description"),
     column_id: Number(formData.get("column_id")),
+    order: Number(formData.get("order")),
   });
 
   if (error) {

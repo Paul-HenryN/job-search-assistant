@@ -14,8 +14,15 @@ import {
 } from "./ui/select";
 import { useColumns } from "@/hooks/useColumns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Column } from "@/types";
+import { Input } from "./ui/input";
+import { useState } from "react";
 
-export function NewJobForm() {
+export function NewJobForm({
+  defaultColumnId,
+}: {
+  defaultColumnId?: Column["id"];
+}) {
   const { data: columns, isLoading } = useColumns();
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation({
@@ -29,6 +36,12 @@ export function NewJobForm() {
   const handleSubmit = async (formData: FormData) => {
     mutateAsync(formData);
   };
+
+  const [selectedColumnId, setSelectedColumnId] = useState<
+    Column["id"] | undefined
+  >(defaultColumnId);
+
+  const selectedColumn = columns?.find((c) => c.id === selectedColumnId);
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-4">
@@ -58,7 +71,13 @@ export function NewJobForm() {
       <div className="flex flex-col gap-2">
         <label>Column</label>
 
-        <Select name="column_id" disabled={isLoading} required>
+        <Select
+          name="column_id"
+          disabled={isLoading}
+          defaultValue={defaultColumnId?.toString()}
+          onValueChange={(value) => setSelectedColumnId(Number(value))}
+          required
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Column" />
           </SelectTrigger>
@@ -73,6 +92,14 @@ export function NewJobForm() {
           </SelectContent>
         </Select>
       </div>
+
+      <Input
+        type="number"
+        name="order"
+        hidden
+        readOnly
+        value={selectedColumn?.jobs.length}
+      />
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         <PlusIcon className="mr-2 h-4 w-4" />

@@ -16,15 +16,19 @@ import {
 import { XIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { NewJobForm } from "./new-job-form";
+import { Column } from "@/types";
 
 type NewJobContextType = {
   isOpen: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
+  defaultColumnId?: Column["id"];
+  setDefaultColumnId: Dispatch<SetStateAction<Column["id"] | undefined>>;
 };
 
 const NewJobFormContext = createContext<NewJobContextType>({
   isOpen: false,
   setOpen: () => {},
+  setDefaultColumnId: () => {},
 });
 
 export function NewJobFormProvider({
@@ -33,9 +37,14 @@ export function NewJobFormProvider({
   children: React.ReactNode;
 }) {
   const [isOpen, setOpen] = useState(false);
+  const [defaultColumnId, setDefaultColumnId] = useState<
+    Column["id"] | undefined
+  >();
 
   return (
-    <NewJobFormContext.Provider value={{ isOpen, setOpen }}>
+    <NewJobFormContext.Provider
+      value={{ isOpen, setOpen, defaultColumnId, setDefaultColumnId }}
+    >
       {children}
       <Drawer open={isOpen} onOpenChange={setOpen} direction="right">
         <DrawerContent>
@@ -50,7 +59,7 @@ export function NewJobFormProvider({
           </DrawerHeader>
 
           <div className="px-4 mt-8">
-            <NewJobForm />
+            <NewJobForm defaultColumnId={defaultColumnId} />
           </div>
         </DrawerContent>
       </Drawer>
