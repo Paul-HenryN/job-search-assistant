@@ -37,3 +37,11 @@ export async function updateJob({
     throw new Error(error.message);
   }
 }
+
+export async function deleteJob(jobId: Job["id"]) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("jobs").delete().eq("id", jobId);
+
+  if (error) throw new Error(error.message);
+}
