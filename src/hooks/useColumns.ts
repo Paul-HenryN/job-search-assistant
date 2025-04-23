@@ -1,21 +1,11 @@
-import { supabase } from "@/lib/supabase/client";
+import { getColumns } from "@/actions/jobs";
 import { Column } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
-export function useColumns({ initialData }: { initialData?: Column[] } = {}) {
+export function useColumns({ initial }: { initial?: Column[] } = {}) {
   return useQuery({
     queryKey: ["columns"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("columns")
-        .select("*,jobs(*)");
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return data as Column[];
-    },
-    initialData,
+    queryFn: getColumns,
+    initialData: initial,
   });
 }

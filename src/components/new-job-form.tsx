@@ -17,6 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Column } from "@/types";
 import { Input } from "./ui/input";
 import { useState } from "react";
+import { useAuth } from "./auth-provider";
 
 export function NewJobForm({
   defaultColumnId,
@@ -24,6 +25,7 @@ export function NewJobForm({
   defaultColumnId?: Column["id"];
 }) {
   const { data: columns, isLoading } = useColumns();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { mutateAsync } = useMutation({
     mutationFn: createJob,
@@ -100,6 +102,8 @@ export function NewJobForm({
         readOnly
         value={selectedColumn?.jobs.length}
       />
+
+      <Input name="user_id" hidden readOnly value={user?.id} />
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         <PlusIcon className="mr-2 h-4 w-4" />

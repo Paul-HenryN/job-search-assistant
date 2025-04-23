@@ -1,12 +1,49 @@
 "use client";
-import { Bell, Plus, Search } from "lucide-react";
+import { Bell, LogOutIcon, Plus, Search, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNewJobForm } from "./new-job-form-provider";
+import { signInWithGoogle } from "@/actions/auth";
+import { useAuth } from "./auth-provider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export function Header() {
   const { setOpen } = useNewJobForm();
+  const { user, logout } = useAuth();
+
+  const UserInfo = () => {
+    if (user) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="flex gap-2 items-center" variant="secondary">
+              <UserIcon className="size-4" />
+              {user.email}
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={logout}>
+              <LogOutIcon /> Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    return (
+      <Button size="sm" onClick={signInWithGoogle}>
+        <UserIcon className="mr-2 size-4" />
+        Login with Google
+      </Button>
+    );
+  };
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-6 dark:bg-gray-800">
@@ -15,23 +52,33 @@ export function Header() {
           JobTrack
         </Link>
       </div>
-      <div className="flex w-full max-w-sm items-center gap-2 px-4">
-        <Search className="h-4 w-4 text-gray-500" />
-        <Input
-          type="search"
-          placeholder="Search applications..."
-          className="h-9 border-none bg-transparent shadow-none focus-visible:ring-0"
-        />
-      </div>
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm">
-          <Bell className="mr-2 h-4 w-4" />
-          Notifications
-        </Button>
-        <Button size="sm" onClick={() => setOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Job
-        </Button>
+
+      {user && (
+        <div className="flex w-full max-w-sm items-center gap-2 px-4">
+          <Search className="size-4 text-gray-500" />
+          <Input
+            type="search"
+            placeholder="Search applications..."
+            className="h-9 border-none bg-transparent shadow-none focus-visible:ring-0"
+          />
+        </div>
+      )}
+
+      <div className="flex gap-4 items-center">
+        {user && (
+          <>
+            <Button variant="outline" size="icon">
+              <Bell className="size-4" />
+            </Button>
+
+            <Button size="sm" onClick={() => setOpen(true)}>
+              <Plus className="mr-2 size-4" />
+              Add Job
+            </Button>
+          </>
+        )}
+
+        <UserInfo />
       </div>
     </header>
   );

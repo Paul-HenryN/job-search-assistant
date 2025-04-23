@@ -1,12 +1,9 @@
 "use server";
-
 import { createClient } from "@/lib/supabase/server";
-import { Job } from "@/types";
+import { Column, Job } from "@/types";
 
 export async function createJob(formData: FormData) {
   const supabase = await createClient();
-
-  console.log("formData", formData);
 
   const { error } = await supabase.from("jobs").insert({
     title: formData.get("title"),
@@ -14,11 +11,10 @@ export async function createJob(formData: FormData) {
     description: formData.get("description"),
     column_id: Number(formData.get("column_id")),
     order: Number(formData.get("order")),
+    user_id: formData.get("user_id"),
   });
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw error;
 }
 
 export async function updateJob({
@@ -44,4 +40,14 @@ export async function deleteJob(jobId: Job["id"]) {
   const { error } = await supabase.from("jobs").delete().eq("id", jobId);
 
   if (error) throw new Error(error.message);
+}
+
+export async function getColumns() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("columns").select("*,jobs(*)");
+
+  if (error) throw error;
+
+  return data as Column[];
 }

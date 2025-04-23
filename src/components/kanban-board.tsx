@@ -19,13 +19,13 @@ import { useEffect, useState } from "react";
 import { JobCard } from "./job-card";
 import { updateJob } from "@/actions/jobs";
 
-export function KanbanBoard({ initialData }: { initialData?: Column[] }) {
+export function KanbanBoard({ initial }: { initial?: Column[] }) {
   const {
     data: columns,
     error,
     isLoading,
   } = useColumns({
-    initialData,
+    initial,
   });
 
   const [optimisticColumns, setOptimisticColumns] = useState<
