@@ -12,6 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Avatar } from "./ui/avatar";
+import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 
 export function Header() {
   const { setOpen } = useNewJobForm();
@@ -23,8 +25,14 @@ export function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className="flex gap-2 items-center" variant="secondary">
-              <UserIcon className="size-4" />
-              {user.email}
+              <Avatar className="size-6">
+                <AvatarImage src={user.user_metadata.avatar_url} />
+                <AvatarFallback>
+                  {user.user_metadata.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+
+              {user.user_metadata.name}
             </Button>
           </DropdownMenuTrigger>
 
