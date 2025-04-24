@@ -14,10 +14,39 @@ import {
 } from "./ui/dropdown-menu";
 import { Avatar } from "./ui/avatar";
 import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { useSearch } from "./search-provider";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useCallback } from "react";
 
 export function Header() {
   const { setOpen } = useNewJobForm();
   const { user, logout } = useAuth();
+  const { search, setSearch } = useSearch();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(name, value);
+
+      return params.toString();
+    },
+    [searchParams]
+  );
+
+  const handleSearchInput = (e: FormEvent<HTMLInputElement>) => {
+    const newSearch = (e.target as HTMLInputElement).value;
+
+    setSearch(newSearch);
+
+    if (newSearch) {
+      router.push(`${pathname}?${createQueryString("search", newSearch)}`);
+    } else {
+      router.push(pathname);
+    }
+  };
 
   const UserInfo = () => {
     if (user) {
@@ -68,6 +97,8 @@ export function Header() {
             type="search"
             placeholder="Search applications..."
             className="h-9 border-none bg-transparent shadow-none focus-visible:ring-0"
+            value={search}
+            onInput={handleSearchInput}
           />
         </div>
       )}

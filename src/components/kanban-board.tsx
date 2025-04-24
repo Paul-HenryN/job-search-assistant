@@ -18,6 +18,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useEffect, useState } from "react";
 import { JobCard } from "./job-card";
 import { updateJob } from "@/actions/jobs";
+import { useSearch } from "./search-provider";
 
 export function KanbanBoard({ initial }: { initial?: Column[] }) {
   const {
@@ -31,6 +32,23 @@ export function KanbanBoard({ initial }: { initial?: Column[] }) {
   const [optimisticColumns, setOptimisticColumns] = useState<
     Column[] | undefined
   >();
+
+  const { search } = useSearch();
+
+  const filteredColumns = !search
+    ? optimisticColumns
+    : optimisticColumns?.map((c) => {
+        const filteredJobs = c.jobs.filter((j) => {
+          const searchToken = search.toLowerCase();
+          return (
+            j.title.toLowerCase().includes(searchToken) ||
+            j.description.toLowerCase().includes(searchToken) ||
+            j.company.toLowerCase().includes(searchToken)
+          );
+        });
+
+        return { ...c, jobs: filteredJobs };
+      });
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -185,7 +203,7 @@ export function KanbanBoard({ initial }: { initial?: Column[] }) {
       onDragOver={handleDragOver}
     >
       <div className="flex h-full space-x-4 pb-4">
-        {optimisticColumns?.map((column) => (
+        {filteredColumns?.map((column) => (
           <KanbanColumn key={column.id} column={column} />
         ))}
       </div>

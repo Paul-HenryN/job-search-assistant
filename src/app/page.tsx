@@ -1,6 +1,7 @@
 import { getColumns } from "@/actions/jobs";
 import { Header } from "@/components/header";
 import { KanbanBoard } from "@/components/kanban-board";
+import { SearchContextProvider } from "@/components/search-provider";
 import { Sidebar } from "@/components/sidebar";
 
 export const dynamic = "force-dynamic";
@@ -11,13 +12,15 @@ export default async function JobTrackerPage() {
 
   return (
     <div className="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
-      <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        <main className="flex-1 overflow-x-auto p-4">
-          <KanbanBoard initial={initialColumns} />
-        </main>
-      </div>
+      <SearchContextProvider>
+        <Header />
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar />
+          <main className="flex-1 overflow-x-auto p-4">
+            <KanbanBoard initial={initialColumns} />
+          </main>
+        </div>
+      </SearchContextProvider>
     </div>
   );
 }
